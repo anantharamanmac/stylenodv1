@@ -1,6 +1,5 @@
 // pages/Cart.jsx
 import React, { useEffect, useState, useContext } from "react";
-import { FaTrashAlt } from "react-icons/fa";
 import { CartContext } from "../context/CartContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -25,29 +24,29 @@ const Cart = () => {
     if (cart) setLoading(false);
   }, [cart]);
 
-  // Fetch related products when cart has items
+  // Fetch related products based on cart categories
   useEffect(() => {
     const fetchRelated = async () => {
       if (!cart.items || cart.items.length === 0) return;
 
       try {
-        // pick category from the first item in cart
-        const firstCategory = cart.items[0].category;
-        if (!firstCategory) return;
+        const categories = [...new Set(cart.items.map((ci) => ci.category))];
+        let allRelated = [];
 
-        const res = await fetch(
-          `${BACKEND_URL}/api/products?category=${encodeURIComponent(
-            firstCategory
-          )}`
-        );
-        if (!res.ok) throw new Error("Failed to fetch related products");
+        for (const cat of categories) {
+          const res = await fetch(
+            `${BACKEND_URL}/api/products?category=${encodeURIComponent(cat)}`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            allRelated = [...allRelated, ...data];
+          }
+        }
 
-        let related = await res.json();
-        // exclude products already in cart
         const cartIds = cart.items.map((item) => item.productId);
-        related = related.filter((p) => !cartIds.includes(p._id)).slice(0, 4);
+        const filtered = allRelated.filter((p) => !cartIds.includes(p._id));
 
-        setRelatedProducts(related);
+        setRelatedProducts(filtered.slice(0, 6));
       } catch (err) {
         console.error("Related products fetch error:", err);
       }
@@ -128,32 +127,34 @@ const Cart = () => {
                         <p className="text-gray-500">₹{item.price}</p>
                         <button
                           onClick={() => removeItem(item.productId)}
-                          className="text-red-500 text-sm mt-1 hover:underline flex items-center"
+                          className="text-red-500 text-sm mt-1 hover:underline"
                         >
-                          <FaTrashAlt className="mr-1" /> Remove
+                          Remove
                         </button>
                       </div>
                     </div>
 
-                    {/* Quantity with + and - buttons */}
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() =>
-                          updateQuantity(item, Math.max(1, item.quantity - 1))
-                        }
-                        className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300"
-                      >
-                        −
-                      </button>
+                    {/* Quantity with + / - buttons */}
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() =>
+                            updateQuantity(item, Math.max(1, item.quantity - 1))
+                          }
+                          className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300"
+                        >
+                          −
+                        </button>
 
-                      <span className="px-3 font-medium">{item.quantity}</span>
+                        <span className="px-3 font-medium">{item.quantity}</span>
 
-                      <button
-                        onClick={() => updateQuantity(item, item.quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300"
-                      >
-                        +
-                      </button>
+                        <button
+                          onClick={() => updateQuantity(item, item.quantity + 1)}
+                          className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300"
+                        >
+                          +
+                        </button>
+                      </div>
 
                       <span className="font-medium">
                         ₹{(item.price * item.quantity).toLocaleString("en-IN")}

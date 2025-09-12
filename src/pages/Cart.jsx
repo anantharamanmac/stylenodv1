@@ -3,43 +3,53 @@ import React, { useEffect, useState, useContext } from "react";
 import { FaTrashAlt } from "react-icons/fa";
 import { CartContext } from "../context/CartContext";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import ProductCard from "../components/ProductCard";
 
-// Spinner component
+const BACKEND_URL =
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+
 const Spinner = () => (
   <div className="flex justify-center items-center py-20">
-    <div className="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+    <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
   </div>
 );
 
 const Cart = () => {
-  const { cart, updateQuantity, removeItem, addToCart } = useContext(CartContext);
+  const { cart, updateQuantity, removeItem } = useContext(CartContext);
   const [loading, setLoading] = useState(true);
+  const [coupon, setCoupon] = useState("");
   const [relatedProducts, setRelatedProducts] = useState([]);
-
-  // Normalize cart items to ensure images array exists
-  const normalizeCartItems = (items) => {
-    return items.map((item) => ({
-      ...item,
-      images: item.images || (item.imageUrl ? [item.imageUrl] : []),
-    }));
-  };
 
   useEffect(() => {
     if (cart) setLoading(false);
+  }, [cart]);
 
-    // Fetch related products
+  // Fetch related products when cart has items
+  useEffect(() => {
     const fetchRelated = async () => {
+      if (!cart.items || cart.items.length === 0) return;
+
       try {
-        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/products`);
-        if (!res.ok) throw new Error("Failed to fetch products");
-        let data = await res.json();
+        // pick category from the first item in cart
+        const firstCategory = cart.items[0].category;
+        if (!firstCategory) return;
 
-        // Exclude items already in cart
-        data = data.filter((p) => !cart.items.some((ci) => ci.productId === p._id)).slice(0, 6);
+        const res = await fetch(
+          `${BACKEND_URL}/api/products?category=${encodeURIComponent(
+            firstCategory
+          )}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch related products");
 
-        setRelatedProducts(data);
+        let related = await res.json();
+        // exclude products already in cart
+        const cartIds = cart.items.map((item) => item.productId);
+        related = related.filter((p) => !cartIds.includes(p._id)).slice(0, 4);
+
+        setRelatedProducts(related);
       } catch (err) {
-        console.error(err);
+        console.error("Related products fetch error:", err);
       }
     };
 
@@ -53,142 +63,168 @@ const Cart = () => {
     0
   );
 
-  const normalizedItems = normalizeCartItems(cart.items);
+  const freeShippingThreshold = 999;
+  const remainingForFreeShipping = Math.max(
+    0,
+    freeShippingThreshold - subtotal
+  );
+  const progress =
+    subtotal >= freeShippingThreshold
+      ? 100
+      : Math.min(100, (subtotal / freeShippingThreshold) * 100);
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen flex flex-col">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <h1 className="text-4xl font-bold mb-10 text-center text-gray-900">
-          Shopping Cart
-        </h1>
+      <div className="flex-grow">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <h1 className="text-4xl font-bold mb-8 text-center">Cart</h1>
 
-        {normalizedItems.length === 0 ? (
-          <p className="text-center text-gray-500 text-lg mt-12">
-            Your cart is empty 😢
-          </p>
-        ) : (
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Cart Items */}
-            <div className="md:col-span-2 space-y-6">
-              {normalizedItems.map((item) => {
-                const imageSrc =
-                  item.images && item.images.length > 0
-                    ? item.images[0]
-                    : "/placeholder.png";
+          {/* Free Shipping Banner */}
+          <div className="bg-white shadow rounded-lg p-4 mb-10 text-center">
+            {remainingForFreeShipping > 0 ? (
+              <p className="text-gray-700">
+                Shop for{" "}
+                <span className="font-semibold">
+                  ₹{remainingForFreeShipping.toLocaleString("en-IN")}
+                </span>{" "}
+                more to enjoy <span className="font-semibold">FREE Shipping</span>
+              </p>
+            ) : (
+              <p className="font-semibold text-green-600">
+                You unlocked FREE Shipping 🎉
+              </p>
+            )}
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+              <div
+                className="bg-black h-2 rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </div>
 
-                return (
+          {cart.items.length === 0 ? (
+            <p className="text-center text-gray-500 text-lg mt-12">
+              Your cart is empty 😢
+            </p>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Cart Items */}
+              <div className="md:col-span-2 space-y-6">
+                {cart.items.map((item) => (
                   <div
                     key={item.productId}
-                    className="flex flex-col md:flex-row items-center md:items-start justify-between bg-white shadow-lg rounded-xl p-5 hover:shadow-2xl transition-shadow duration-300"
+                    className="flex items-center justify-between bg-white shadow rounded-lg p-5"
                   >
-   <img
-  src={item.imageUrl || "/placeholder.png"}
-  alt={item.name}
-  className="w-28 h-28 md:w-32 md:h-32 object-cover rounded-lg"
-/>
-
-
-                    <div className="flex-1 md:ml-6 mt-4 md:mt-0 w-full">
-                      <h2 className="text-xl font-semibold text-gray-900">{item.name}</h2>
-                      <p className="text-gray-500 mt-1 text-lg">
-                        ₹{item.price?.toLocaleString("en-IN") || 0}
-                      </p>
-                      <div className="flex items-center mt-3 space-x-4">
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            updateQuantity(item, parseInt(e.target.value))
-                          }
-                          className="w-20 text-center border border-gray-300 rounded-lg py-1"
-                        />
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={item.imageUrl || "/placeholder.png"}
+                        alt={item.name}
+                        className="w-24 h-24 object-cover rounded-lg"
+                      />
+                      <div>
+                        <h2 className="text-lg font-semibold">{item.name}</h2>
+                        <p className="text-gray-500">₹{item.price}</p>
                         <button
                           onClick={() => removeItem(item.productId)}
-                          className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100 transition"
+                          className="text-red-500 text-sm mt-1 hover:underline flex items-center"
                         >
-                          <FaTrashAlt />
+                          <FaTrashAlt className="mr-1" /> Remove
                         </button>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
 
-            {/* Order Summary */}
-            <div className="bg-white shadow-lg rounded-xl p-6 md:sticky md:top-28">
-              <h2 className="text-2xl font-semibold mb-6 text-gray-900">
-                Order Summary
-              </h2>
-              <div className="space-y-3">
-                <div className="flex justify-between text-gray-700">
-                  <span>Subtotal</span>
-                  <span className="font-medium">
-                    ₹{subtotal.toLocaleString("en-IN")}
-                  </span>
-                </div>
-                <div className="flex justify-between text-gray-700">
-                  <span>Shipping</span>
-                  <span className="font-medium">₹0</span>
-                </div>
+                    {/* Quantity with + and - buttons */}
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() =>
+                          updateQuantity(item, Math.max(1, item.quantity - 1))
+                        }
+                        className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300"
+                      >
+                        −
+                      </button>
+
+                      <span className="px-3 font-medium">{item.quantity}</span>
+
+                      <button
+                        onClick={() => updateQuantity(item, item.quantity + 1)}
+                        className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300"
+                      >
+                        +
+                      </button>
+
+                      <span className="font-medium">
+                        ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="border-t mt-4 pt-4 flex justify-between text-xl font-bold text-gray-900">
-                <span>Total</span>
-                <span>₹{subtotal.toLocaleString("en-IN")}</span>
+
+              {/* Cart Summary */}
+              <div className="bg-white shadow rounded-lg p-6 space-y-6">
+                {/* Coupon */}
+                <div>
+                  <h2 className="font-semibold mb-2">Have a coupon?</h2>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={coupon}
+                      onChange={(e) => setCoupon(e.target.value)}
+                      placeholder="Enter code"
+                      className="flex-1 border rounded-lg px-3 py-2"
+                    />
+                    <button className="bg-black text-white px-4 py-2 rounded-lg">
+                      Apply
+                    </button>
+                  </div>
+                </div>
+
+                {/* Summary */}
+                <div className="space-y-3">
+                  <div className="flex justify-between text-gray-700">
+                    <span>Subtotal</span>
+                    <span>₹{subtotal.toLocaleString("en-IN")}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <span>Shipping</span>
+                    <span>₹{remainingForFreeShipping === 0 ? 0 : 50}</span>
+                  </div>
+                  <div className="border-t pt-3 flex justify-between font-bold text-lg">
+                    <span>Total</span>
+                    <span>
+                      ₹
+                      {(subtotal +
+                        (remainingForFreeShipping === 0 ? 0 : 50)
+                      ).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                </div>
+
+                <button className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-900">
+                  Checkout
+                </button>
               </div>
-              <button className="mt-6 w-full bg-black text-white py-3 rounded-xl hover:bg-gray-900 transition-colors text-lg font-semibold">
-                Proceed to Checkout
-              </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <div className="mt-12 max-w-7xl mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 text-center relative">
-              Hey, take a look — you may also like this
-              <span className="block w-24 h-1 bg-black mx-auto mt-2 rounded-full"></span>
-            </h2>
-
-            <div className="flex space-x-4 overflow-x-auto pb-4">
-              {relatedProducts.map((p) => {
-                const thumb = p.images && p.images.length > 0 ? p.images[0] : "/placeholder.png";
-
-                return (
-                  <div
-                    key={p._id}
-                    className="flex-none w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer"
-                  >
-                    <img
-                      src={thumb}
-                      alt={p.name}
-                      className="w-full h-48 object-cover rounded-t-xl"
-                    />
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 truncate">
-                        {p.name}
-                      </h3>
-                      <p className="text-gray-600 mt-1">
-                        ₹{p.price?.toLocaleString("en-IN")}
-                      </p>
-                      <button
-                        className="mt-3 w-full bg-black text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-900 transition-colors"
-                        onClick={() => addToCart(p, 1)}
-                      >
-                        Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+          <div className="max-w-7xl mx-auto px-4 py-12">
+            <h2 className="text-2xl font-bold mb-6">Hope you like</h2>
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
+              {relatedProducts.map((p) => (
+                <ProductCard key={p._id} product={p} />
+              ))}
             </div>
           </div>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 };

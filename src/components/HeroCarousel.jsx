@@ -1,4 +1,3 @@
-// components/HeroCarousel.jsx
 import React, { useEffect, useState } from "react";
 import Slider from "react-slick";
 import { motion } from "framer-motion";
@@ -36,40 +35,29 @@ const HeroCarousel = () => {
   if (!banners.length) return null;
 
   return (
-    <section className="w-full h-[70vh] relative">
+    <section className="w-full relative h-[50vh] md:h-[70vh]">
       <Slider {...settings}>
         {banners.map((banner, idx) => (
-          <div key={banner._id} className="relative h-[70vh]">
-            {/* Background Image */}
+          <div key={banner._id} className="relative h-[50vh] md:h-[70vh]">
             <img
               src={banner.imageUrl}
               alt={banner.heading}
               className="w-full h-full object-cover"
             />
-
-            {/* Overlay */}
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-center">
-              {/* Motion Container with key based on currentIndex to re-trigger animation */}
               {currentIndex === idx && (
-                <motion.div
-                  key={currentIndex} // forces remount on slide change
-                  initial="hidden"
-                  animate="visible"
-                >
+                <motion.div key={currentIndex} initial="hidden" animate="visible">
                   <motion.h1
-                    className="text-4xl md:text-6xl font-bold text-white"
+                    className="text-3xl md:text-6xl font-bold text-white"
                     variants={variants}
                   >
                     {banner.heading}
                   </motion.h1>
-                  <motion.p
-                    className="mt-4 text-lg text-white"
-                    variants={variants}
-                  >
+                  <motion.p className="mt-4 text-sm md:text-lg text-white" variants={variants}>
                     {banner.subText}
                   </motion.p>
                   <motion.button
-                    className="mt-6 px-6 py-3 bg-white text-black rounded-md font-semibold hover:bg-gray-200"
+                    className="mt-6 px-4 md:px-6 py-2 bg-white text-black rounded-md font-semibold hover:bg-gray-200"
                     variants={variants}
                   >
                     {banner.buttonText}

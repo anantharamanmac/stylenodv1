@@ -1,11 +1,11 @@
 // pages/Checkout.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+import { CartContext } from "../context/CartContext";
 
 const Checkout = () => {
+  const { cart } = useContext(CartContext);
   const [cardNumber, setCardNumber] = useState("");
   const [cvv, setCvv] = useState("");
   const [expiryMonth, setExpiryMonth] = useState("");
@@ -15,21 +15,35 @@ const Checkout = () => {
   const [method, setMethod] = useState("card"); // card | upi | gpay | cod
 
   useEffect(() => {
-    const fetchSummary = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/cart/summary`);
-        const data = await res.json();
-        setSummary(data);
-      } catch (err) {
-        console.error("Error fetching cart summary:", err);
-      }
-    };
-    fetchSummary();
-  }, []);
+    if (!cart.items || cart.items.length === 0) {
+      setSummary(null);
+      return;
+    }
+
+    const subtotal = cart.items.reduce(
+      (acc, item) => acc + (item.price || 0) * item.quantity,
+      0
+    );
+
+    const shipping = subtotal >= 999 ? 0 : 50;
+    const tax = Math.round(subtotal * 0.18); // 18% GST
+    const total = subtotal + shipping + tax;
+
+    setSummary({
+      customer: "John Doe", // later replace with logged-in user details
+      orderId: Math.floor(Math.random() * 1000000),
+      subtotal,
+      itemsCount: cart.items.length,
+      shipping,
+      tax,
+      total,
+      items: cart.items,
+    });
+  }, [cart]);
 
   const handlePay = () => {
     alert(`Payment submitted via ${method}!`);
-    // integrate with Razorpay / Stripe / UPI API here
+    // 🔗 integrate with Razorpay / Stripe / UPI API here
   };
 
   return (
@@ -154,30 +168,29 @@ const Checkout = () => {
             {summary ? (
               <>
                 <div>
-                  <div className="bg-white shadow-md rounded-xl p-5 flex justify-between items-center mb-6">
-                    <div>
-                      <p className="text-gray-700 font-medium">
-                        {summary.customer || "John Doe"}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        **** **** **** 3456
-                      </p>
-                    </div>
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png"
-                      alt="Card"
-                      className="w-12"
-                    />
-                  </div>
+                  <h2 className="text-xl font-bold mb-4">Order Summary</h2>
+                  <ul className="space-y-3 mb-6 max-h-60 overflow-y-auto">
+                    {summary.items.map((item, idx) => (
+                      <li
+                        key={idx}
+                        className="flex justify-between bg-white p-3 rounded-lg shadow"
+                      >
+                        <span>
+                          {item.name} × {item.quantity}
+                        </span>
+                        <span>
+                          ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
 
                   <div className="space-y-3 text-gray-700">
                     <div className="flex justify-between">
-                      <span>Order Number</span>
-                      <span className="font-medium">{summary.orderId}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Products</span>
-                      <span className="font-medium">{summary.itemsCount}</span>
+                      <span>Subtotal</span>
+                      <span className="font-medium">
+                        ₹{summary.subtotal.toLocaleString("en-IN")}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Shipping</span>
@@ -193,13 +206,13 @@ const Checkout = () => {
                 <div className="border-t mt-6 pt-6 flex justify-between items-center text-lg font-bold">
                   <span>You have to pay</span>
                   <span>
-                    ₹{summary.total}{" "}
+                    ₹{summary.total.toLocaleString("en-IN")}{" "}
                     <span className="text-sm text-gray-500">INR</span>
                   </span>
                 </div>
               </>
             ) : (
-              <p>Loading summary...</p>
+              <p className="text-gray-500">Your cart is empty.</p>
             )}
           </div>
         </div>

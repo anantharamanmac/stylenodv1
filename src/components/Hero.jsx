@@ -40,7 +40,7 @@ const Hero = () => {
   if (banners.length === 0) return null;
 
   return (
-    <section className="relative w-full h-[70vh] flex items-center justify-center overflow-hidden">
+    <section className="relative w-full h-[50vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
       {banners.map((banner, idx) => (
         <AnimatePresence key={banner._id}>
           {idx === currentIndex && (
@@ -69,7 +69,7 @@ const Hero = () => {
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8 }}
-                  className="text-4xl md:text-6xl font-bold"
+                  className="text-3xl md:text-6xl font-bold"
                 >
                   {banner.heading}
                 </motion.h1>
@@ -77,7 +77,7 @@ const Hero = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.3 }}
-                  className="mt-4 text-lg"
+                  className="mt-4 text-sm md:text-lg"
                 >
                   {banner.subText}
                 </motion.p>
@@ -85,7 +85,7 @@ const Hero = () => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.8, delay: 0.5 }}
-                  className="mt-6 px-6 py-3 bg-white text-black font-semibold rounded-md hover:bg-gray-200"
+                  className="mt-6 px-4 md:px-6 py-2 bg-white text-black font-semibold rounded-md hover:bg-gray-200"
                 >
                   {banner.buttonText}
                 </motion.button>
@@ -98,13 +98,13 @@ const Hero = () => {
       {/* Carousel Controls */}
       <button
         onClick={handlePrev}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/40 text-white p-2 rounded-full hover:bg-black"
+        className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-black/40 text-white p-2 md:p-3 rounded-full hover:bg-black"
       >
         &#10094;
       </button>
       <button
         onClick={handleNext}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/40 text-white p-2 rounded-full hover:bg-black"
+        className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-black/40 text-white p-2 md:p-3 rounded-full hover:bg-black"
       >
         &#10095;
       </button>

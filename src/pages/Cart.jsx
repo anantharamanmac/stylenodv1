@@ -1,5 +1,6 @@
 // pages/Cart.jsx
 import React, { useEffect, useState, useContext } from "react";
+import { useNavigate } from "react-router-dom"; // ⬅️ added
 import { CartContext } from "../context/CartContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -19,6 +20,7 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [coupon, setCoupon] = useState("");
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const navigate = useNavigate(); // ⬅️ added
 
   useEffect(() => {
     if (cart) setLoading(false);
@@ -204,7 +206,11 @@ const Cart = () => {
                   </div>
                 </div>
 
-                <button className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-900">
+                {/* Checkout Button */}
+                <button
+                  onClick={() => navigate("/checkout")}
+                  className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-900"
+                >
                   Checkout
                 </button>
               </div>

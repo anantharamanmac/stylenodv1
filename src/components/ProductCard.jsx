@@ -8,46 +8,32 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useContext(CartContext);
   const navigate = useNavigate();
 
-const handleAddToCart = async (e) => {
-  e.stopPropagation();
-  setLoading(true);
-  try {
-    await addToCart(
-      {
-        ...product,
-        images: product.images || [product.imageUrl].filter(Boolean), // ✅ always provide images array
-      },
-      1
-    );
-    console.log(`${product.name} added to cart ✅`);
-  } catch (err) {
-    console.error("Error adding to cart:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  const handleAddToCart = async (e) => {
+    e.stopPropagation();
+    setLoading(true);
+    try {
+      await addToCart(
+        {
+          ...product,
+          images: product.images || [product.imageUrl].filter(Boolean), // ✅ ensure array
+        },
+        1
+      );
+      console.log(`${product.name} added to cart ✅`);
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCardClick = () => {
     navigate(`/product/${product._id}`);
   };
 
-  // Use first image as thumbnail
-// Product thumbnail
-const thumbnail =
-  product.images && product.images.length > 0 ? product.images[0] : null;
-
-{thumbnail ? (
-  <img
-    src={thumbnail}
-    alt={product.name}
-    className="w-full h-64 object-cover"
-  />
-) : (
-  <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
-    No Image
-  </div>
-)}
-
+  // Thumbnail selection
+  const thumbnail =
+    product.images && product.images.length > 0 ? product.images[0] : null;
 
   return (
     <div
@@ -82,7 +68,9 @@ const thumbnail =
 
       <div className="p-4">
         <h3 className="text-lg font-semibold">{product.name}</h3>
-        <p className="text-gray-600 mt-1">₹{product.price.toLocaleString("en-IN")}</p>
+        <p className="text-gray-600 mt-1">
+          ₹{product.price.toLocaleString("en-IN")}
+        </p>
         <button
           onClick={handleAddToCart}
           disabled={loading}

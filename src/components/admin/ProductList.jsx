@@ -13,7 +13,13 @@ const ProductList = () => {
   const [editData, setEditData] = useState({});
 
   const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = React.useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user"));
+    } catch {
+      return null;
+    }
+  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -35,7 +41,7 @@ const ProductList = () => {
       return;
     }
     fetchProducts();
-  }, []);
+  }, [user]); // ✅ Added user as dependency
 
   // Delete product
   const handleDelete = async (id) => {
@@ -57,7 +63,7 @@ const ProductList = () => {
     }
   };
 
-  // Start editing a product
+  // Start editing
   const startEditing = (product) => {
     setEditingId(product._id);
     setEditData({
@@ -74,15 +80,15 @@ const ProductList = () => {
     setEditData({});
   };
 
-  // Handle input changes
+  // Input change handler
   const handleChange = (e) => {
     setEditData({ ...editData, [e.target.name]: e.target.value });
   };
 
-  // Handle multiple image uploads
+  // Multiple image upload
   const handleImagesUpload = async (e) => {
     const files = Array.from(e.target.files);
-    if (files.length === 0) return;
+    if (!files.length) return;
 
     try {
       const uploadedUrls = [];
@@ -180,7 +186,7 @@ const ProductList = () => {
                       </>
                     ) : product.images && product.images.length > 0 ? (
                       <img
-                        src={product.images[0]} // first image as thumbnail
+                        src={product.images[0]}
                         alt={product.name}
                         className="w-16 h-16 object-cover rounded"
                       />
@@ -211,7 +217,7 @@ const ProductList = () => {
                         className="border px-2 py-1 rounded w-full"
                       />
                     ) : (
-                      `₹${product.price.toLocaleString("en-IN")}` // INR
+                      `₹${product.price.toLocaleString("en-IN")}`
                     )}
                   </td>
                   <td className="border p-2">

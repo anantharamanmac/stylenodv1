@@ -1,5 +1,6 @@
 // components/Footer.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 import { FaFacebookF, FaInstagram, FaTwitter, FaWhatsapp } from "react-icons/fa";
 
 function Footer() {
@@ -10,18 +11,41 @@ function Footer() {
         <div className="flex flex-col items-start space-y-4">
           <img src="/logo2.webp" alt="Stylenod Logo" className="w-36" />
           <div className="flex space-x-4 text-gray-600">
-            <a href="#" className="hover:text-black"><FaFacebookF /></a>
-            <a href="#" className="hover:text-black"><FaTwitter /></a>
-            <a href="#" className="hover:text-black"><FaInstagram /></a>
+            <a
+              href="https://facebook.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-black"
+            >
+              <FaFacebookF />
+            </a>
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-black"
+            >
+              <FaTwitter />
+            </a>
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-black"
+            >
+              <FaInstagram />
+            </a>
           </div>
         </div>
 
         {/* Middle - Quick Links */}
         <div className="flex flex-col space-y-2 text-gray-700 md:items-center">
           <h3 className="font-semibold mb-2">QUICK LINKS</h3>
-          <a href="#" className="hover:underline">Home</a>
-          <a href="#" className="hover:underline">Collections</a>
-          <a href="#" className="hover:underline">Return & Refund Policies</a>
+          <Link to="/" className="hover:underline">Home</Link>
+          <Link to="/collections" className="hover:underline">Collections</Link>
+          <Link to="/return-policy" className="hover:underline">
+            Return & Refund Policies
+          </Link>
         </div>
 
         {/* Right - Newsletter */}
@@ -33,7 +57,9 @@ function Footer() {
               placeholder="Your email address"
               className="border border-gray-300 px-3 py-2 rounded-l focus:outline-none"
             />
-            <button className="bg-black text-white px-4 rounded-r hover:bg-gray-800">Subscribe</button>
+            <button className="bg-black text-white px-4 rounded-r hover:bg-gray-800">
+              Subscribe
+            </button>
           </div>
           <p className="text-xs text-gray-500 mt-1">*Don’t worry we don’t spam</p>
         </div>
@@ -48,7 +74,9 @@ function Footer() {
           <img src="/payments/mastercard.png" alt="Mastercard" className="h-6" />
           <img src="/payments/visa.png" alt="Visa" className="h-6" />
         </div>
-        <p className="text-sm">&copy; {new Date().getFullYear()} Stylenod | All rights reserved.</p>
+        <p className="text-sm">
+          &copy; {new Date().getFullYear()} Stylenod | All rights reserved.
+        </p>
       </div>
 
       {/* WhatsApp Floating Button */}

@@ -9,6 +9,7 @@ import Cart from "./pages/Cart";
 import ProductDetails from "./pages/ProductDetails";
 import Checkout from "./pages/Checkout";
 import Profile from "./pages/Profile";
+import New from "./pages/New";
 
 import { CartProvider } from "./context/CartContext";
 import Preloader from "./components/Preloader"; // your existing preloader
@@ -36,6 +37,7 @@ function App() {
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path ="/checkout" element={<Checkout />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path ="/new" element={<New />} />
           </Routes>
         </Router>
       )}

@@ -68,7 +68,7 @@ function Navbar() {
 
         {/* Desktop Menu */}
         <nav className="hidden md:flex space-x-8 text-sm font-medium text-black">
-          <a href="/" className="hover:text-gray-600">New In</a>
+          <a href="/new" className="hover:text-gray-600">New In</a>
           <a href="/" className="hover:text-gray-600">Shop</a>
           <a href="/" className="hover:text-gray-600">Our Story</a>
         </nav>

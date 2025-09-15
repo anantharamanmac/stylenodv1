@@ -2,8 +2,8 @@ import React, { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import ProductCard from "../components/ProductCard";
-import Navbar from "../components/Navbar"; // your Navbar component
-import { AiOutlineInfoCircle } from "react-icons/ai"; // icon for size chart
+import Navbar from "../components/Navbar";
+import { AiOutlineInfoCircle } from "react-icons/ai";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -20,7 +20,8 @@ const ProductDetails = () => {
   const [zoomStyle, setZoomStyle] = useState({ backgroundPosition: "0% 0%" });
 
   const [selectedSize, setSelectedSize] = useState("");
-  const [showSizeChart, setShowSizeChart] = useState(false); // modal state
+  const [showSizeChart, setShowSizeChart] = useState(false);
+
   const sizes = ["L", "XL", "XXL", "XXXL"]; // Available sizes
 
   useEffect(() => {
@@ -32,14 +33,16 @@ const ProductDetails = () => {
         setProduct(data);
         setMainImage(data.images && data.images.length > 0 ? data.images[0] : data.imageUrl);
 
-        // Fetch related products
-        const relatedRes = await fetch(
-          `${BACKEND_URL}/api/products?category=${encodeURIComponent(data.category)}`
-        );
-        if (!relatedRes.ok) throw new Error("Failed to fetch related products");
-        let related = await relatedRes.json();
-        related = related.filter((p) => p._id !== data._id).slice(0, 4);
-        setRelatedProducts(related);
+        // Fetch related products by category
+        if (data.category) {
+          const relatedRes = await fetch(
+            `${BACKEND_URL}/api/products?category=${encodeURIComponent(data.category)}`
+          );
+          if (!relatedRes.ok) throw new Error("Failed to fetch related products");
+          let related = await relatedRes.json();
+          related = related.filter((p) => p._id !== data._id).slice(0, 4);
+          setRelatedProducts(related);
+        }
       } catch (err) {
         console.error(err);
         setError(err.message || "Something went wrong");
@@ -131,9 +134,17 @@ const ProductDetails = () => {
           <div className="md:w-1/2 p-6 flex flex-col justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-              <p className="text-xl text-gray-700 mb-4">
+              <p className="text-xl text-gray-700 mb-2">
                 ₹{product.price.toLocaleString("en-IN")}
               </p>
+
+              {/* Category */}
+              {product.category && (
+                <span className="inline-block bg-gray-200 text-gray-700 text-sm px-3 py-1 rounded-full mb-4">
+                  {product.category}
+                </span>
+              )}
+
               <p className="text-gray-600 mb-4">{product.description}</p>
 
               {/* Size Selection */}
@@ -168,6 +179,7 @@ const ProductDetails = () => {
               </div>
             </div>
 
+            {/* Action buttons */}
             <div className="flex flex-col md:flex-row gap-4 mt-4">
               <button
                 onClick={handleAddToCart}

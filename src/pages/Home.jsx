@@ -1,6 +1,6 @@
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
-import CollectionGrid from "../components/CollectionGrid";
+// import CollectionGrid from "../components/CollectionGrid";
 import ProductGrid from "../components/ProductGrid";
 import Footer from "../components/Footer";
 import ScrollingMessages from "../components/ScrollingMessages";
